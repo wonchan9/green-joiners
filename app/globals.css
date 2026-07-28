@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+  --lotte-red: #E5002B;
+  --lotte-red-light: #FFF5F5;
+  --lotte-gold: #C9A96E;
+  --lotte-gold-light: #FBF5E8;
+  --lotte-black: #1A1A1A;
+  --lotte-gray: #F4F4F4;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  color: var(--lotte-black);
+  background: var(--lotte-gray);
+}
