@@ -4,12 +4,16 @@ import { getOrCreateUser } from "@/lib/session";
 import { cookies } from "next/headers";
 
 // GET /api/missions → 미션 목록 + 오늘 참여 여부
-export async function GET() {
+// ?all=1 파라미터 시 비활성 미션 포함 (어드민 전용)
+export async function GET(req: NextRequest) {
+  const showAll = req.nextUrl.searchParams.get("all") === "1";
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value;
 
   const db = getDb();
-  const missions = db.prepare("SELECT * FROM missions WHERE active = 1").all();
+  const missions = db.prepare(
+    showAll ? "SELECT * FROM missions ORDER BY id" : "SELECT * FROM missions WHERE active = 1 ORDER BY id"
+  ).all();
 
   if (!memberKey) return NextResponse.json(missions);
 

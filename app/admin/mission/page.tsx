@@ -11,8 +11,9 @@ export default function AdminMissionPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [newMission, setNewMission] = useState({ title: "", description: "", points: 50, daily_limit: 1 });
 
+  // ?all=1 → 비활성 미션 포함 전체 로드 (어드민 전용)
   const load = () =>
-    fetch("/api/missions").then((r) => r.json()).then((data) => setMissions(data));
+    fetch("/api/missions?all=1").then((r) => r.json()).then((data) => setMissions(data));
 
   useEffect(() => { load(); }, []);
 
