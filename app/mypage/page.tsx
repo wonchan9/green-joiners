@@ -1,24 +1,37 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { GiftIcon, ListIcon, ChevronRightIcon } from "@/components/Icons";
-import { MOCK_USER, MOCK_POINT_HISTORY } from "@/mock/data";
+import { getDb } from "@/lib/db";
+import { getOrCreateUser } from "@/lib/session";
 
-export default function MypagePage() {
-  const earnTotal = MOCK_POINT_HISTORY.filter((h) => h.type === "earn").reduce((s, h) => s + h.amount, 0);
-  const useTotal  = MOCK_POINT_HISTORY.filter((h) => h.type === "use").reduce((s, h) => s + h.amount, 0);
+interface PointHistory { id: number; type: string; amount: number; description: string; created_at: string; }
+
+export default async function MypagePage() {
+  const cookieStore = await cookies();
+  const memberKey = cookieStore.get("member_key")?.value ?? "guest";
+  const db = getDb();
+  const user = getOrCreateUser(memberKey);
+
+  const history = db.prepare(
+    "SELECT id, type, amount, description, created_at FROM point_history WHERE user_id = ? ORDER BY created_at DESC"
+  ).all(user.id) as PointHistory[];
+
+  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + h.amount, 0);
+  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + h.amount, 0);
 
   return (
     <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
-      <Header points={MOCK_USER.points} />
+      <Header points={user.points} />
 
       {/* 포인트 히어로 카드 */}
       <div className="mx-4 mt-4">
         <div className="bg-[#1A1A1A] rounded-2xl p-5 shadow-lg">
           <p className="text-[10px] tracking-[0.2em] text-[#C9A96E] font-bold uppercase mb-4">My Point</p>
-          <p className="text-sm text-white/50 mb-1">안녕하세요, {MOCK_USER.name}님</p>
+          <p className="text-sm text-white/50 mb-1">안녕하세요, {user.name}님</p>
           <div className="flex items-end gap-1 mb-5">
-            <span className="text-5xl font-black text-white leading-none">{MOCK_USER.points.toLocaleString()}</span>
+            <span className="text-5xl font-black text-white leading-none">{user.points.toLocaleString()}</span>
             <span className="text-[#C9A96E] font-black text-3xl leading-none mb-1">P</span>
           </div>
           <div className="flex gap-6 border-t border-white/10 pt-4">
@@ -69,23 +82,29 @@ export default function MypagePage() {
             전체보기 <ChevronRightIcon className="w-3 h-3" />
           </Link>
         </div>
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-          {MOCK_POINT_HISTORY.slice(0, 5).map((h, i) => (
-            <div
-              key={h.id}
-              className={`flex items-center gap-3 px-4 py-3 ${i !== 0 ? "border-t border-gray-50" : ""}`}
-            >
-              <span className={`w-2 h-2 rounded-full shrink-0 ${h.type === "earn" ? "bg-[#C9A96E]" : "bg-gray-200"}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{h.description}</p>
-                <p className="text-xs text-gray-400">{h.created_at}</p>
+        {history.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center text-sm text-gray-400 shadow-sm">
+            아직 포인트 내역이 없습니다
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            {history.slice(0, 5).map((h, i) => (
+              <div
+                key={h.id}
+                className={`flex items-center gap-3 px-4 py-3 ${i !== 0 ? "border-t border-gray-50" : ""}`}
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${h.type === "earn" ? "bg-[#C9A96E]" : "bg-gray-200"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{h.description}</p>
+                  <p className="text-xs text-gray-400">{h.created_at.slice(0, 16)}</p>
+                </div>
+                <span className={`font-bold text-sm shrink-0 ${h.type === "earn" ? "text-[#C9A96E]" : "text-gray-400"}`}>
+                  {h.type === "earn" ? "+" : "−"}{h.amount}P
+                </span>
               </div>
-              <span className={`font-bold text-sm shrink-0 ${h.type === "earn" ? "text-[#C9A96E]" : "text-gray-400"}`}>
-                {h.type === "earn" ? "+" : "−"}{h.amount}P
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <BottomNav />

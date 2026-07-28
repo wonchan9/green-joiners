@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  overflow-y: scroll; /* 스크롤바 공간 항상 예약 → 페이지 이동 시 레이아웃 쉬프트 방지 */
+}
+
 :root {
   --lotte-red: #E5002B;
   --lotte-red-light: #FFF5F5;

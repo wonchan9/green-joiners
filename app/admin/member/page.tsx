@@ -1,12 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
-import { MOCK_MEMBERS } from "@/mock/data";
+
+interface Member { id: number; member_key: string; name: string; points: number; joined_at: string; }
 
 export default function AdminMemberPage() {
-  const [members] = useState(MOCK_MEMBERS);
+  const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
-  const [detail, setDetail] = useState<typeof MOCK_MEMBERS[0] | null>(null);
+  const [detail, setDetail] = useState<Member | null>(null);
+
+  useEffect(() => {
+    fetch("/api/members").then((r) => r.json()).then(setMembers);
+  }, []);
 
   const filtered = members.filter(
     (m) => m.name.includes(search) || m.member_key.includes(search)
@@ -24,7 +29,6 @@ export default function AdminMemberPage() {
             <p className="text-sm text-gray-400 mt-0.5">캠페인 참여 회원을 조회하세요</p>
           </div>
 
-          {/* 요약 카드 */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-2xl p-4 shadow-sm">
               <p className="text-xs text-gray-400 mb-1">전체 회원</p>
@@ -36,11 +40,10 @@ export default function AdminMemberPage() {
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-sm">
               <p className="text-xs text-gray-400 mb-1">평균 보유 포인트</p>
-              <p className="text-2xl font-black">{Math.round(totalPoints / members.length).toLocaleString()}<span className="text-sm font-bold text-gray-400 ml-1">P</span></p>
+              <p className="text-2xl font-black">{members.length ? Math.round(totalPoints / members.length).toLocaleString() : 0}<span className="text-sm font-bold text-gray-400 ml-1">P</span></p>
             </div>
           </div>
 
-          {/* 검색 */}
           <div className="relative mb-4">
             <input
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#E5002B] pr-10 shadow-sm"
@@ -66,13 +69,15 @@ export default function AdminMemberPage() {
                     <td className="px-5 py-4 text-gray-400 font-mono text-xs">{m.member_key}</td>
                     <td className="px-5 py-4 font-semibold">{m.name}</td>
                     <td className="px-5 py-4 font-bold text-[#C9A96E]">{m.points.toLocaleString()}P</td>
-                    <td className="px-5 py-4 text-gray-400">{m.joined_at}</td>
+                    <td className="px-5 py-4 text-gray-400">{m.joined_at?.slice(0, 10)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filtered.length === 0 && (
-              <p className="text-center text-sm text-gray-400 py-16">검색 결과가 없습니다.</p>
+              <p className="text-center text-sm text-gray-400 py-16">
+                {members.length === 0 ? "회원 데이터를 불러오는 중..." : "검색 결과가 없습니다."}
+              </p>
             )}
           </div>
         </div>
@@ -96,7 +101,7 @@ export default function AdminMemberPage() {
             </div>
             <div className="text-sm text-gray-500 mb-5 flex justify-between">
               <span>가입일</span>
-              <span className="font-medium text-gray-700">{detail.joined_at}</span>
+              <span className="font-medium text-gray-700">{detail.joined_at?.slice(0, 10)}</span>
             </div>
             <button onClick={() => setDetail(null)} className="w-full py-3 rounded-xl bg-gray-100 text-sm font-semibold">닫기</button>
           </div>

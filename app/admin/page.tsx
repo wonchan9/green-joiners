@@ -6,13 +6,27 @@ export default function AdminLoginPage() {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const login = () => {
-    if (id === "admin" && pw === "admin1234") {
-      router.push("/admin/banner");
-    } else {
-      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+  const login = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: id, password: pw }),
+      });
+      if (!res.ok) {
+        setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+      } else {
+        router.push("/admin/banner");
+      }
+    } catch {
+      setError("서버 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,7 +50,6 @@ export default function AdminLoginPage() {
       {/* 오른쪽 로그인 폼 */}
       <div className="w-full lg:w-[420px] bg-white flex items-center justify-center px-8 py-12">
         <div className="w-full max-w-sm">
-          {/* 모바일용 로고 */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 bg-[#E5002B] rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-black">G</span>
@@ -74,9 +87,10 @@ export default function AdminLoginPage() {
             )}
             <button
               onClick={login}
-              className="w-full bg-[#E5002B] text-white font-bold py-3.5 rounded-xl mt-2 active:opacity-90 transition-opacity"
+              disabled={loading}
+              className="w-full bg-[#E5002B] text-white font-bold py-3.5 rounded-xl mt-2 active:opacity-90 transition-opacity disabled:opacity-50"
             >
-              로그인
+              {loading ? "로그인 중..." : "로그인"}
             </button>
             <p className="text-xs text-gray-400 text-center">테스트 계정: admin / admin1234</p>
           </div>

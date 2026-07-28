@@ -19,12 +19,17 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return user ?? null;
 }
 
-export function getOrCreateUser(memberKey: string): SessionUser {
+export function getOrCreateUser(memberKey: string, name?: string): SessionUser {
   const db = getDb();
   let user = db.prepare("SELECT * FROM users WHERE member_key = ?").get(memberKey) as SessionUser | undefined;
   if (!user) {
-    db.prepare("INSERT INTO users (member_key) VALUES (?)").run(memberKey);
+    const userName = name ?? "그린조이너";
+    db.prepare("INSERT INTO users (member_key, name) VALUES (?, ?)").run(memberKey, userName);
     user = db.prepare("SELECT * FROM users WHERE member_key = ?").get(memberKey) as SessionUser;
+  } else if (name && user.name !== name) {
+    // 이름이 변경된 경우 업데이트
+    db.prepare("UPDATE users SET name = ? WHERE member_key = ?").run(name, memberKey);
+    user = { ...user, name };
   }
   return user;
 }

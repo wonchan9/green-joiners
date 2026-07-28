@@ -1,24 +1,37 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
-import { MOCK_REWARDS, MOCK_REWARD_REQUESTS } from "@/mock/data";
+
+interface RewardRequest { id: number; name?: string; user_id: number; reward_id: number; reward_title?: string; used_points: number; status: string; created_at: string; }
+interface Reward { id: number; title: string; required_points: number; stock: number; }
 
 export default function AdminRewardPage() {
-  const [requests, setRequests] = useState(MOCK_REWARD_REQUESTS);
-  const [rewards, setRewards] = useState(MOCK_REWARDS);
+  const [requests, setRequests] = useState<RewardRequest[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
   const [tab, setTab] = useState<"requests" | "manage">("requests");
   const [showAdd, setShowAdd] = useState(false);
   const [newReward, setNewReward] = useState({ title: "", required_points: 0 });
 
-  const complete = (id: number) => {
-    setRequests(requests.map((r) => (r.id === id ? { ...r, status: "completed" } : r)));
-  };
+  const loadRequests = () =>
+    fetch("/api/rewards/requests").then((r) => r.json()).then(setRequests).catch(() => {});
+  const loadRewards = () =>
+    fetch("/api/rewards").then((r) => r.json()).then(setRewards);
 
-  const addReward = () => {
+  useEffect(() => {
+    loadRewards();
+    loadRequests();
+  }, []);
+
+  const addReward = async () => {
     if (!newReward.title || !newReward.required_points) return;
-    setRewards([...rewards, { id: Date.now(), ...newReward, stock: 99, image_emoji: "" }]);
+    await fetch("/api/rewards/manage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newReward, stock: 99 }),
+    }).catch(() => {});
     setNewReward({ title: "", required_points: 0 });
     setShowAdd(false);
+    loadRewards();
   };
 
   const tabs = [
@@ -36,7 +49,6 @@ export default function AdminRewardPage() {
             <p className="text-sm text-gray-400 mt-0.5">교환 신청과 리워드 종류를 관리하세요</p>
           </div>
 
-          {/* 탭 */}
           <div className="flex gap-2 mb-5">
             {tabs.map(({ key, label }) => (
               <button
@@ -58,7 +70,7 @@ export default function AdminRewardPage() {
               <table className="w-full text-sm">
                 <thead className="border-b border-gray-100">
                   <tr>
-                    {["회원", "리워드", "포인트", "상태", "액션"].map((h) => (
+                    {["회원", "리워드", "포인트", "상태", "일시"].map((h) => (
                       <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
@@ -66,8 +78,8 @@ export default function AdminRewardPage() {
                 <tbody className="divide-y divide-gray-50">
                   {requests.map((r) => (
                     <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-4 font-medium">{r.name}</td>
-                      <td className="px-5 py-4 text-gray-600">{r.reward_title}</td>
+                      <td className="px-5 py-4 font-medium">{r.name ?? `user#${r.user_id}`}</td>
+                      <td className="px-5 py-4 text-gray-600">{r.reward_title ?? `reward#${r.reward_id}`}</td>
                       <td className="px-5 py-4 font-bold text-[#C9A96E]">{r.used_points}P</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
@@ -78,20 +90,14 @@ export default function AdminRewardPage() {
                           {r.status === "completed" ? "지급완료" : "대기"}
                         </span>
                       </td>
-                      <td className="px-5 py-4">
-                        {r.status === "pending" && (
-                          <button
-                            onClick={() => complete(r.id)}
-                            className="text-xs bg-[#E5002B] text-white px-3 py-1.5 rounded-lg font-semibold"
-                          >
-                            지급완료
-                          </button>
-                        )}
-                      </td>
+                      <td className="px-5 py-4 text-gray-400 text-xs">{r.created_at?.slice(0, 16)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {requests.length === 0 && (
+                <p className="text-center text-sm text-gray-400 py-16">교환 신청 내역이 없습니다.</p>
+              )}
             </div>
           )}
 

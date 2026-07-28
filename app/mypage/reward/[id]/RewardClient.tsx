@@ -11,7 +11,32 @@ interface Reward {
 export default function RewardClient({ reward, canExchange }: { reward: Reward; canExchange: boolean }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
+
+  const handleExchange = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/rewards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reward_id: reward.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "교환 실패");
+      }
+      setShowConfirm(false);
+      setDone(true);
+    } catch (e: unknown) {
+      setShowConfirm(false);
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (done) {
     return (
@@ -38,13 +63,14 @@ export default function RewardClient({ reward, canExchange }: { reward: Reward; 
 
   return (
     <>
+      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center w-full">{error}</p>}
       <button
         onClick={() => canExchange && setShowConfirm(true)}
         className={`w-full font-bold py-4 rounded-2xl text-base mt-2 active:opacity-90 ${
           canExchange ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
         }`}
       >
-        {canExchange ? "교환하기" : reward.required_points > 750 ? "포인트 부족" : "품절"}
+        {canExchange ? "교환하기" : reward.required_points > 0 ? "포인트 부족" : "품절"}
       </button>
 
       {showConfirm && (
@@ -56,10 +82,11 @@ export default function RewardClient({ reward, canExchange }: { reward: Reward; 
             <div className="flex gap-3">
               <button onClick={() => setShowConfirm(false)} className="flex-1 py-3 rounded-xl bg-gray-100 font-bold text-gray-600">취소</button>
               <button
-                onClick={() => { setShowConfirm(false); setDone(true); }}
-                className="flex-1 py-3 rounded-xl bg-[#E5002B] text-white font-bold"
+                onClick={handleExchange}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-[#E5002B] text-white font-bold disabled:opacity-50"
               >
-                교환
+                {loading ? "처리 중..." : "교환"}
               </button>
             </div>
           </div>

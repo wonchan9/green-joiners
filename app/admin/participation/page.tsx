@@ -1,15 +1,29 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
-import { MOCK_PARTICIPATIONS } from "@/mock/data";
+
+interface Participation {
+  id: number; member_key: string; name: string;
+  mission_title: string; mission_type: string;
+  earned_points: number; status: string; created_at: string;
+}
 
 export default function AdminParticipationPage() {
-  const [items, setItems] = useState(MOCK_PARTICIPATIONS);
-  const [detail, setDetail] = useState<typeof MOCK_PARTICIPATIONS[0] | null>(null);
+  const [items, setItems] = useState<Participation[]>([]);
+  const [detail, setDetail] = useState<Participation | null>(null);
 
-  const reject = (id: number) => {
-    setItems(items.map((p) => (p.id === id ? { ...p, status: "rejected" } : p)));
+  const load = () => fetch("/api/participate").then((r) => r.json()).then(setItems);
+
+  useEffect(() => { load(); }, []);
+
+  const reject = async (id: number) => {
+    await fetch("/api/participate", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
     setDetail(null);
+    load();
   };
 
   return (
@@ -22,7 +36,6 @@ export default function AdminParticipationPage() {
             <p className="text-sm text-gray-400 mt-0.5">미션 참여 내역을 확인하고 관리하세요</p>
           </div>
 
-          {/* 요약 카드 */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-2xl p-4 shadow-sm">
               <p className="text-xs text-gray-400 mb-1">전체 참여</p>
@@ -64,11 +77,14 @@ export default function AdminParticipationPage() {
                         {p.status === "completed" ? "완료" : "반려"}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-gray-400 text-xs">{p.created_at}</td>
+                    <td className="px-5 py-4 text-gray-400 text-xs">{p.created_at.slice(0, 16)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {items.length === 0 && (
+              <p className="text-center text-sm text-gray-400 py-16">참여 내역이 없습니다.</p>
+            )}
           </div>
         </div>
       </main>
@@ -82,7 +98,7 @@ export default function AdminParticipationPage() {
                 { label: "회원", value: detail.name },
                 { label: "미션", value: detail.mission_title },
                 { label: "포인트", value: `+${detail.earned_points}P`, gold: true },
-                { label: "일시", value: detail.created_at },
+                { label: "일시", value: detail.created_at.slice(0, 16) },
               ].map(({ label, value, gold }) => (
                 <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50">
                   <span className="text-gray-400">{label}</span>

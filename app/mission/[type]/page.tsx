@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MOCK_MISSIONS } from "@/mock/data";
+import { getDb } from "@/lib/db";
+import { getOrCreateUser } from "@/lib/session";
 import { ReceiptMission, QrMission, RealsMission, DailyMission } from "../MissionClients";
 
 const typeLabel: Record<string, string> = {
@@ -11,14 +13,27 @@ const typeLabel: Record<string, string> = {
   daily: "데일리 일상 미션",
 };
 
+interface Mission { id: number; type: string; points: number; title: string; daily_limit: number; }
+
 export default async function MissionDetailPage({
   params,
 }: {
   params: Promise<{ type: string }>;
 }) {
   const { type } = await params;
-  const mission = MOCK_MISSIONS.find((m) => m.type === type);
+  const cookieStore = await cookies();
+  const memberKey = cookieStore.get("member_key")?.value ?? "guest";
+  const db = getDb();
+  const user = getOrCreateUser(memberKey);
+
+  const mission = db.prepare("SELECT * FROM missions WHERE type = ? AND active = 1").get(type) as Mission | undefined;
   if (!mission) notFound();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { cnt } = db.prepare(
+    "SELECT COUNT(*) as cnt FROM participations WHERE user_id = ? AND mission_id = ? AND date(created_at) = ?"
+  ).get(user.id, mission.id, today) as { cnt: number };
+  const completedToday = cnt >= mission.daily_limit;
 
   return (
     <div className="pb-20 max-w-md mx-auto bg-[#F4F4F4]">
@@ -30,11 +45,25 @@ export default async function MissionDetailPage({
         </span>
       </div>
 
-      {type === "receipt" && <ReceiptMission points={mission.points} />}
-      {type === "basket" && <QrMission points={mission.points} label="롯데백화점 장바구니" />}
-      {type === "tumbler" && <QrMission points={mission.points} label="다회용기/텀블러" />}
-      {type === "reals" && <RealsMission points={mission.points} />}
-      {type === "daily" && <DailyMission points={mission.points} />}
+      {completedToday ? (
+        <div className="px-4 py-12 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <p className="font-bold text-gray-600">오늘의 미션 완료!</p>
+          <p className="text-sm text-gray-400 mt-1">내일 다시 참여하세요</p>
+        </div>
+      ) : (
+        <>
+          {type === "receipt" && <ReceiptMission missionId={mission.id} points={mission.points} />}
+          {type === "basket" && <QrMission missionId={mission.id} points={mission.points} label="롯데백화점 장바구니" />}
+          {type === "tumbler" && <QrMission missionId={mission.id} points={mission.points} label="다회용기/텀블러" />}
+          {type === "reals" && <RealsMission missionId={mission.id} points={mission.points} />}
+          {type === "daily" && <DailyMission missionId={mission.id} points={mission.points} />}
+        </>
+      )}
     </div>
   );
 }

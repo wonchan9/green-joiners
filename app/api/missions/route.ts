@@ -31,10 +31,33 @@ export async function GET() {
   return NextResponse.json(missionsWithStatus);
 }
 
-// PATCH /api/missions/:id → 관리자 포인트 수정
-export async function PATCH(req: NextRequest) {
-  const { id, points } = await req.json();
+// POST /api/missions → 새 미션 등록 (어드민)
+export async function POST(req: NextRequest) {
+  const { type = "daily", title, description, points, daily_limit = 1 } = await req.json();
+  if (!title || !points) {
+    return NextResponse.json({ error: "제목과 포인트는 필수입니다." }, { status: 400 });
+  }
   const db = getDb();
-  db.prepare("UPDATE missions SET points = ? WHERE id = ?").run(points, id);
+  const result = db
+    .prepare(
+      "INSERT INTO missions (type, title, description, points, daily_limit, active) VALUES (?, ?, ?, ?, ?, 1)"
+    )
+    .run(type, title, description ?? "", Number(points), Number(daily_limit));
+  const mission = db.prepare("SELECT * FROM missions WHERE id = ?").get(result.lastInsertRowid);
+  return NextResponse.json({ ok: true, mission });
+}
+
+// PATCH /api/missions → 포인트 수정 or active 토글
+export async function PATCH(req: NextRequest) {
+  const body = await req.json();
+  const { id } = body;
+  const db = getDb();
+
+  if ("active" in body) {
+    db.prepare("UPDATE missions SET active = ? WHERE id = ?").run(body.active ? 1 : 0, id);
+  } else if ("points" in body) {
+    db.prepare("UPDATE missions SET points = ? WHERE id = ?").run(body.points, id);
+  }
+
   return NextResponse.json({ ok: true });
 }

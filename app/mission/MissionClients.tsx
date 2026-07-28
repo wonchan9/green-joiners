@@ -50,13 +50,41 @@ function GuideBox({ children }: { children: React.ReactNode }) {
   );
 }
 
+async function participate(missionId: number, quantity = 1) {
+  const res = await fetch("/api/participate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mission_id: missionId, quantity }),
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error ?? "참여 실패");
+  }
+  return res.json() as Promise<{ ok: boolean; earned_points: number; total_points: number }>;
+}
+
 // 모바일 영수증 미션
-export function ReceiptMission({ points }: { points: number }) {
-  const [done, setDone] = useState(false);
+export function ReceiptMission({ missionId, points }: { missionId: number; points: number }) {
+  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  if (done) return (
-    <CompleteModal points={points} totalPoints={750 + points} onClose={() => router.push("/mission")} />
+  const handle = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await participate(missionId);
+      setResult(data);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (result) return (
+    <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
   );
 
   return (
@@ -74,20 +102,36 @@ export function ReceiptMission({ points }: { points: number }) {
         <p className="text-sm font-semibold text-gray-700 mb-1">모바일 영수증 발급</p>
         <p className="text-xs text-gray-400">발급 확인 시 자동 완료 · 1일 1회</p>
       </div>
-      <button onClick={() => setDone(true)} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90">
-        [MVP] 영수증 발급 완료 시뮬레이션
+      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
+      <button onClick={handle} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+        {loading ? "처리 중..." : "[MVP] 영수증 발급 완료 시뮬레이션"}
       </button>
     </div>
   );
 }
 
 // QR 미션
-export function QrMission({ points, label }: { points: number; label: string }) {
-  const [done, setDone] = useState(false);
+export function QrMission({ missionId, points, label }: { missionId: number; points: number; label: string }) {
+  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  if (done) return (
-    <CompleteModal points={points} totalPoints={750 + points} onClose={() => router.push("/mission")} />
+  const handle = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await participate(missionId);
+      setResult(data);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (result) return (
+    <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
   );
 
   return (
@@ -105,21 +149,38 @@ export function QrMission({ points, label }: { points: number; label: string }) 
         </div>
         <p className="text-xs text-gray-400">1일 1회 참여 가능</p>
       </div>
-      <button onClick={() => setDone(true)} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90">
-        [MVP] QR 촬영 완료 시뮬레이션
+      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
+      <button onClick={handle} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+        {loading ? "처리 중..." : "[MVP] QR 촬영 완료 시뮬레이션"}
       </button>
     </div>
   );
 }
 
 // 리얼스 미션
-export function RealsMission({ points }: { points: number }) {
-  const [done, setDone] = useState(false);
+export function RealsMission({ missionId, points }: { missionId: number; points: number }) {
+  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
   const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  if (done) return (
-    <CompleteModal points={points * count} totalPoints={750 + points * count} onClose={() => router.push("/mission")} />
+  const handle = async () => {
+    if (count < 1) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await participate(missionId, count);
+      setResult(data);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (result) return (
+    <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
   );
 
   return (
@@ -150,26 +211,44 @@ export function RealsMission({ points }: { points: number }) {
         </div>
         <p className="text-xs text-gray-400 text-center mt-2">참여 횟수 제한 없음</p>
       </div>
+      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
       <button
-        onClick={() => count > 0 && setDone(true)}
+        onClick={handle}
+        disabled={count < 1 || loading}
         className={`w-full font-bold py-4 rounded-2xl text-base active:opacity-90 ${
-          count > 0 ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
+          count > 0 && !loading ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
         }`}
       >
-        리얼스 참여 확인하기
+        {loading ? "처리 중..." : "리얼스 참여 확인하기"}
       </button>
     </div>
   );
 }
 
 // 데일리 미션
-export function DailyMission({ points }: { points: number }) {
+export function DailyMission({ missionId, points }: { missionId: number; points: number }) {
   const [photo, setPhoto] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  if (done) return (
-    <CompleteModal points={points} totalPoints={750 + points} onClose={() => router.push("/mission")} />
+  const handle = async () => {
+    if (!photo) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await participate(missionId);
+      setResult(data);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (result) return (
+    <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
   );
 
   return (
@@ -210,13 +289,15 @@ export function DailyMission({ points }: { points: number }) {
           </>
         )}
       </div>
+      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
       <button
-        onClick={() => photo && setDone(true)}
+        onClick={handle}
+        disabled={!photo || loading}
         className={`w-full font-bold py-4 rounded-2xl text-base active:opacity-90 ${
-          photo ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
+          photo && !loading ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
         }`}
       >
-        참여하기
+        {loading ? "처리 중..." : "참여하기"}
       </button>
     </div>
   );
