@@ -5,6 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { GiftIcon, ListIcon, ChevronRightIcon } from "@/components/Icons";
+import LogoutButton from "./LogoutButton";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 
@@ -107,6 +108,11 @@ export default async function MypagePage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* 로그아웃 */}
+      <section className="px-4 pb-6">
+        <LogoutButton />
       </section>
 
       <BottomNav />
