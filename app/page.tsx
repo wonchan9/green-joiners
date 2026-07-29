@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ChevronRightIcon, ReceiptIcon, BasketIcon, TumblerIcon, TagIcon, CameraIcon } from "@/components/Icons";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 
 const missionConfig: Record<string, {
@@ -30,24 +30,27 @@ export default async function Home() {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
 
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
   const today = new Date().toISOString().slice(0, 10);
 
-  const rawMissions = db.prepare("SELECT * FROM missions WHERE active = 1").all() as Mission[];
-  const missions: Mission[] = rawMissions.map((m) => {
-    const { cnt } = db.prepare(
-      "SELECT COUNT(*) as cnt FROM participations WHERE user_id = ? AND mission_id = ? AND date(created_at) = ?"
-    ).get(user.id, m.id, today) as { cnt: number };
-    return { ...m, completed_today: cnt >= m.daily_limit };
-  });
+  const rawMissions = await sql`SELECT * FROM missions WHERE active = 1` as Mission[];
+  const missions: Mission[] = await Promise.all(
+    rawMissions.map(async (m) => {
+      const rows = await sql`
+        SELECT COUNT(*) as cnt FROM participations
+        WHERE user_id = ${user.id} AND mission_id = ${m.id} AND created_at::date = ${today}::date
+      `;
+      const cnt = Number(rows[0].cnt);
+      return { ...m, completed_today: cnt >= Number(m.daily_limit) };
+    })
+  );
 
-  const history = db.prepare(
-    "SELECT type, amount FROM point_history WHERE user_id = ? ORDER BY created_at DESC"
-  ).all(user.id) as PointHistory[];
+  const history = await sql`
+    SELECT type, amount FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC
+  ` as PointHistory[];
 
-  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + h.amount, 0);
-  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + h.amount, 0);
+  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + Number(h.amount), 0);
+  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + Number(h.amount), 0);
 
   const incompleteMissions = missions.filter((m) => !m.completed_today).slice(0, 3);
   const completedCount = missions.filter((m) => m.completed_today).length;
@@ -71,7 +74,7 @@ export default async function Home() {
           <div className="mb-4">
             <p className="text-[10px] text-white/40 mb-0.5">보유 포인트</p>
             <div className="flex items-end gap-1">
-              <span className="text-4xl font-black text-white leading-none">{user.points.toLocaleString()}</span>
+              <span className="text-4xl font-black text-white leading-none">{Number(user.points).toLocaleString()}</span>
               <span className="text-[#C9A96E] font-black text-2xl leading-none mb-0.5">P</span>
             </div>
             <p className="text-[10px] text-white/30 mt-1">{user.name}님의 그린 포인트</p>
@@ -102,7 +105,7 @@ export default async function Home() {
         </div>
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#E5002B] rounded-full" style={{ width: `${(completedCount / missions.length) * 100}%` }} />
+            <div className="h-full bg-[#E5002B] rounded-full" style={{ width: `${missions.length ? (completedCount / missions.length) * 100 : 0}%` }} />
           </div>
           <span className="text-xs text-gray-400 shrink-0 tabular-nums">{completedCount}/{missions.length} 완료</span>
         </div>
@@ -147,7 +150,7 @@ export default async function Home() {
           <div>
             <p className="text-[10px] tracking-[0.15em] text-[#C9A96E] font-bold mb-0.5 uppercase">Reward Shop</p>
             <p className="text-white font-bold text-sm">리워드 교환하기</p>
-            <p className="text-white/40 text-xs mt-0.5">보유 {user.points.toLocaleString()}P</p>
+            <p className="text-white/40 text-xs mt-0.5">보유 {Number(user.points).toLocaleString()}P</p>
           </div>
           <ChevronRightIcon className="w-5 h-5 text-[#C9A96E]" />
         </Link>

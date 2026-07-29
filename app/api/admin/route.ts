@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 
 // POST /api/admin → 로그인
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
-  const db = getDb();
-  const admin = db
-    .prepare("SELECT * FROM admin_users WHERE username = ? AND password = ?")
-    .get(username, password);
-  if (!admin) return NextResponse.json({ error: "인증 실패" }, { status: 401 });
+  const rows = await sql`
+    SELECT * FROM admin_users WHERE username = ${username} AND password = ${password}
+  `;
+  if (rows.length === 0) return NextResponse.json({ error: "인증 실패" }, { status: 401 });
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set("admin_auth", "1", { path: "/", httpOnly: false });

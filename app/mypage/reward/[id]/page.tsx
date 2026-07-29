@@ -1,7 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 import { GiftIcon } from "@/components/Icons";
 import RewardClient from "./RewardClient";
@@ -16,13 +18,13 @@ export default async function RewardDetailPage({
   const { id } = await params;
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
 
-  const reward = db.prepare("SELECT * FROM rewards WHERE id = ? AND visible = 1").get(Number(id)) as Reward | undefined;
-  if (!reward) notFound();
+  const rows = await sql`SELECT * FROM rewards WHERE id = ${Number(id)} AND visible = 1`;
+  if (rows.length === 0) notFound();
+  const reward = rows[0] as Reward;
 
-  const canExchange = user.points >= reward.required_points && reward.stock > 0;
+  const canExchange = Number(user.points) >= Number(reward.required_points) && Number(reward.stock) > 0;
 
   return (
     <div className="pb-20 max-w-md mx-auto bg-[#F4F4F4]">
@@ -41,11 +43,11 @@ export default async function RewardDetailPage({
         <div className="w-full bg-white rounded-2xl p-4 shadow-sm mt-2">
           <div className="flex justify-between text-sm mb-2">
             <span className="text-gray-500">필요 포인트</span>
-            <span className="font-bold text-[#C9A96E]">{reward.required_points.toLocaleString()}P</span>
+            <span className="font-bold text-[#C9A96E]">{Number(reward.required_points).toLocaleString()}P</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">보유 포인트</span>
-            <span className="font-bold">{user.points.toLocaleString()}P</span>
+            <span className="font-bold">{Number(user.points).toLocaleString()}P</span>
           </div>
         </div>
 

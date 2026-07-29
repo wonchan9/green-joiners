@@ -1,7 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 
 interface PointHistory { id: number; type: string; amount: number; description: string; created_at: string; }
@@ -9,12 +11,12 @@ interface PointHistory { id: number; type: string; amount: number; description: 
 export default async function HistoryPage() {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
 
-  const history = db.prepare(
-    "SELECT id, type, amount, description, created_at FROM point_history WHERE user_id = ? ORDER BY created_at DESC"
-  ).all(user.id) as PointHistory[];
+  const history = await sql`
+    SELECT id, type, amount, description, created_at
+    FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC
+  ` as PointHistory[];
 
   return (
     <div className="pb-24 max-w-md mx-auto bg-white">
@@ -25,7 +27,7 @@ export default async function HistoryPage() {
           <h1 className="font-bold text-base leading-snug">포인트 내역</h1>
         </div>
         <span className="text-xs font-bold text-[#C9A96E] border border-[#C9A96E] px-2.5 py-1 rounded-full">
-          {user.points.toLocaleString()}P
+          {Number(user.points).toLocaleString()}P
         </span>
       </div>
 
@@ -41,10 +43,10 @@ export default async function HistoryPage() {
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${h.type === "earn" ? "bg-[#C9A96E]" : "bg-gray-200"}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{h.description}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{h.created_at.slice(0, 16)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{String(h.created_at).slice(0, 16)}</p>
               </div>
               <span className={`font-bold text-sm shrink-0 ml-2 ${h.type === "earn" ? "text-[#C9A96E]" : "text-gray-400"}`}>
-                {h.type === "earn" ? "+" : "−"}{h.amount}P
+                {h.type === "earn" ? "+" : "−"}{Number(h.amount)}P
               </span>
             </div>
           ))

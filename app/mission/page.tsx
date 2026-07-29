@@ -5,7 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ReceiptIcon, BasketIcon, TumblerIcon, TagIcon, CameraIcon } from "@/components/Icons";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 
 const missionConfig: Record<string, {
@@ -29,17 +29,20 @@ interface Mission {
 export default async function MissionListPage() {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
   const today = new Date().toISOString().slice(0, 10);
 
-  const rawMissions = db.prepare("SELECT * FROM missions WHERE active = 1").all() as Mission[];
-  const missions: Mission[] = rawMissions.map((m) => {
-    const { cnt } = db.prepare(
-      "SELECT COUNT(*) as cnt FROM participations WHERE user_id = ? AND mission_id = ? AND date(created_at) = ?"
-    ).get(user.id, m.id, today) as { cnt: number };
-    return { ...m, completed_today: cnt >= m.daily_limit };
-  });
+  const rawMissions = await sql`SELECT * FROM missions WHERE active = 1` as Mission[];
+  const missions: Mission[] = await Promise.all(
+    rawMissions.map(async (m) => {
+      const rows = await sql`
+        SELECT COUNT(*) as cnt FROM participations
+        WHERE user_id = ${user.id} AND mission_id = ${m.id} AND created_at::date = ${today}::date
+      `;
+      const cnt = Number(rows[0].cnt);
+      return { ...m, completed_today: cnt >= Number(m.daily_limit) };
+    })
+  );
 
   const completedCount = missions.filter((m) => m.completed_today).length;
 

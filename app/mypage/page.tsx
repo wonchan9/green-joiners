@@ -1,9 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { GiftIcon, ListIcon, ChevronRightIcon } from "@/components/Icons";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 
 interface PointHistory { id: number; type: string; amount: number; description: string; created_at: string; }
@@ -11,15 +13,15 @@ interface PointHistory { id: number; type: string; amount: number; description: 
 export default async function MypagePage() {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
 
-  const history = db.prepare(
-    "SELECT id, type, amount, description, created_at FROM point_history WHERE user_id = ? ORDER BY created_at DESC"
-  ).all(user.id) as PointHistory[];
+  const history = await sql`
+    SELECT id, type, amount, description, created_at
+    FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC
+  ` as PointHistory[];
 
-  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + h.amount, 0);
-  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + h.amount, 0);
+  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + Number(h.amount), 0);
+  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + Number(h.amount), 0);
 
   return (
     <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
@@ -31,7 +33,7 @@ export default async function MypagePage() {
           <p className="text-[10px] tracking-[0.2em] text-[#C9A96E] font-bold uppercase mb-4">My Point</p>
           <p className="text-sm text-white/50 mb-1">안녕하세요, {user.name}님</p>
           <div className="flex items-end gap-1 mb-5">
-            <span className="text-5xl font-black text-white leading-none">{user.points.toLocaleString()}</span>
+            <span className="text-5xl font-black text-white leading-none">{Number(user.points).toLocaleString()}</span>
             <span className="text-[#C9A96E] font-black text-3xl leading-none mb-1">P</span>
           </div>
           <div className="flex gap-6 border-t border-white/10 pt-4">
@@ -96,10 +98,10 @@ export default async function MypagePage() {
                 <span className={`w-2 h-2 rounded-full shrink-0 ${h.type === "earn" ? "bg-[#C9A96E]" : "bg-gray-200"}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{h.description}</p>
-                  <p className="text-xs text-gray-400">{h.created_at.slice(0, 16)}</p>
+                  <p className="text-xs text-gray-400">{String(h.created_at).slice(0, 16)}</p>
                 </div>
                 <span className={`font-bold text-sm shrink-0 ${h.type === "earn" ? "text-[#C9A96E]" : "text-gray-400"}`}>
-                  {h.type === "earn" ? "+" : "−"}{h.amount}P
+                  {h.type === "earn" ? "+" : "−"}{Number(h.amount)}P
                 </span>
               </div>
             ))}

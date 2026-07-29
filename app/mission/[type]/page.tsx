@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 import { ReceiptMission, QrMission, RealsMission, DailyMission } from "../MissionClients";
 
@@ -23,17 +23,19 @@ export default async function MissionDetailPage({
   const { type } = await params;
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
-  const db = getDb();
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
 
-  const mission = db.prepare("SELECT * FROM missions WHERE type = ? AND active = 1").get(type) as Mission | undefined;
-  if (!mission) notFound();
+  const missionRows = await sql`SELECT * FROM missions WHERE type = ${type} AND active = 1`;
+  if (missionRows.length === 0) notFound();
+  const mission = missionRows[0] as Mission;
 
   const today = new Date().toISOString().slice(0, 10);
-  const { cnt } = db.prepare(
-    "SELECT COUNT(*) as cnt FROM participations WHERE user_id = ? AND mission_id = ? AND date(created_at) = ?"
-  ).get(user.id, mission.id, today) as { cnt: number };
-  const completedToday = cnt >= mission.daily_limit;
+  const countRows = await sql`
+    SELECT COUNT(*) as cnt FROM participations
+    WHERE user_id = ${user.id} AND mission_id = ${mission.id} AND created_at::date = ${today}::date
+  `;
+  const cnt = Number(countRows[0].cnt);
+  const completedToday = cnt >= Number(mission.daily_limit);
 
   return (
     <div className="pb-20 max-w-md mx-auto bg-[#F4F4F4]">

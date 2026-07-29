@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const memberKey = String(membership_no).trim();
   const userName = String(name).trim();
 
-  const user = getOrCreateUser(memberKey, userName);
+  const user = await getOrCreateUser(memberKey, userName);
   const res = NextResponse.json({ ok: true, user });
   res.cookies.set("member_key", memberKey, { path: "/", maxAge: 60 * 60 * 24 * 365 });
   return res;
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   if (!memberKey) {
     return NextResponse.json({ error: "member_key 없음" }, { status: 400 });
   }
-  const user = getOrCreateUser(memberKey);
+  const user = await getOrCreateUser(memberKey);
   const res = NextResponse.json({ ok: true, user });
   res.cookies.set("member_key", memberKey, { path: "/", httpOnly: false });
   return res;
