@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Logo from "@/components/Logo";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
@@ -35,8 +36,8 @@ export default function AdminLoginPage() {
       {/* 왼쪽 브랜딩 패널 */}
       <div className="hidden lg:flex flex-1 bg-[#1A1A1A] items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-[#E5002B] rounded-2xl mx-auto mb-5 flex items-center justify-center">
-            <span className="text-white text-2xl font-black">G</span>
+          <div className="mx-auto mb-5 w-fit">
+            <Logo size="xl" />
           </div>
           <h1 className="text-white font-black text-2xl mb-1">그린 조이너스</h1>
           <p className="text-white/30 text-sm">Admin Dashboard</p>
@@ -51,9 +52,7 @@ export default function AdminLoginPage() {
       <div className="w-full lg:w-[420px] bg-white flex items-center justify-center px-8 py-12">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-[#E5002B] rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-black">G</span>
-            </div>
+            <Logo size="md" />
             <span className="font-black text-[#1A1A1A]">그린 조이너스</span>
           </div>
 

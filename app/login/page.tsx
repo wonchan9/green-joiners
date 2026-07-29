@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Logo from "@/components/Logo";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -40,8 +41,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="text-center mb-10">
-          <div className="w-14 h-14 bg-[#E5002B] rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white text-2xl font-black">G</span>
+          <div className="mx-auto mb-4 w-fit">
+            <Logo size="lg" />
           </div>
           <p className="text-[10px] tracking-[0.25em] text-[#E5002B] font-bold uppercase mb-1">Green Joiners</p>
           <h1 className="font-black text-2xl text-[#1A1A1A]">그린 조이너스</h1>
@@ -53,7 +54,7 @@ export default function LoginPage() {
           <div>
             <label className="text-xs font-semibold text-gray-500 mb-1.5 block">롯데 멤버십 번호</label>
             <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#E5002B] transition-colors tracking-widest font-mono"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#E5002B] transition-colors tracking-widest font-mono placeholder:font-sans placeholder:tracking-normal"
               placeholder="멤버십 번호 입력"
               value={membershipNo}
               onChange={(e) => setMembershipNo(e.target.value)}

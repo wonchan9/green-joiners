@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 const menus = [
   { href: "/admin/banner",        label: "배너 관리"  },
@@ -14,9 +15,7 @@ export default function AdminNav({ current }: { current: string }) {
       {/* 로고 */}
       <div className="px-5 py-5 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-[#E5002B] rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white text-sm font-black">G</span>
-          </div>
+          <Logo size="md" />
           <div>
             <p className="text-white font-black text-sm leading-tight">그린 조이너스</p>
             <p className="text-white/30 text-[10px] tracking-wide">Admin</p>
