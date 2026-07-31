@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import Logo from "@/components/Logo";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const [membershipNo, setMembershipNo] = useState("");
@@ -37,58 +37,83 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F4] flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen" style={{ background: "#1A1A1A" }}>
+    <div className="min-h-screen flex flex-col max-w-md mx-auto">
+      {/* 상단 패턴 영역 */}
+      <div
+        className="h-52 flex-shrink-0 flex items-end px-6 pb-6 relative"
+        style={{
+          background: "repeating-linear-gradient(135deg,#2b2b2b,#2b2b2b 12px,#232323 12px,#232323 24px)",
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(0deg,#1A1A1A 10%,rgba(26,26,26,0) 70%)" }}
+        />
+        <div className="relative z-10">
+          <h1 className="font-display text-white text-[28px] font-bold leading-tight">
+            쇼핑하고<br />지구도 지키는 습관
+          </h1>
+        </div>
+      </div>
+
+      {/* 폼 영역 */}
+      <div className="flex-1 px-6 pt-8 pb-10 flex flex-col gap-4 w-full">
         {/* 로고 */}
-        <div className="text-center mb-10">
-          <div className="mx-auto mb-4 w-fit">
-            <Logo size="lg" />
-          </div>
-          <p className="text-[10px] tracking-[0.25em] text-[#E5002B] font-bold uppercase mb-1">Green Joiners</p>
-          <h1 className="font-black text-2xl text-[#1A1A1A]">그린 조이너스</h1>
-          <p className="text-sm text-gray-400 mt-1">롯데백화점 친환경 캠페인</p>
+        <div className="flex items-center gap-3 mb-2">
+          <Logo size="md" />
+          <span className="text-white font-black text-base">그린 조이너스</span>
         </div>
 
-        {/* 폼 */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col gap-4">
-          <div>
-            <label className="text-xs font-semibold text-gray-500 mb-1.5 block">롯데 멤버십 번호</label>
-            <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#E5002B] transition-colors tracking-widest font-mono placeholder:font-sans placeholder:tracking-normal"
-              placeholder="멤버십 번호 입력"
-              value={membershipNo}
-              onChange={(e) => setMembershipNo(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && login()}
-              inputMode="numeric"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-500 mb-1.5 block">이름</label>
-            <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#E5002B] transition-colors"
-              placeholder="이름 입력"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && login()}
-            />
-          </div>
-          {error && (
-            <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
-          <button
-            onClick={login}
-            disabled={loading}
-            className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base mt-1 active:opacity-90 disabled:opacity-50"
-          >
-            {loading ? "확인 중..." : "참여하기"}
-          </button>
+        <div>
+          <p className="text-white/50 text-xs font-semibold mb-2">이름</p>
+          <input
+            className="w-full rounded-xl px-4 py-4 text-white text-base font-bold outline-none placeholder:text-white/25 placeholder:font-normal"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(201,169,110,0.4)",
+            }}
+            placeholder="이름을 입력하세요"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && login()}
+          />
         </div>
 
-        <p className="text-xs text-gray-400 text-center mt-6 leading-relaxed">
-          롯데백화점 L.POINT 멤버십 번호로 참여하세요.<br />
-          캠페인 종료 후 포인트는 자동 소멸됩니다.
+        <div>
+          <p className="text-white/50 text-xs font-semibold mb-2">회원번호</p>
+          <input
+            className="w-full rounded-xl px-4 py-4 text-white text-base font-bold outline-none placeholder:text-white/25 placeholder:font-normal"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(201,169,110,0.4)",
+            }}
+            placeholder="회원번호를 입력하세요"
+            value={membershipNo}
+            onChange={(e) => setMembershipNo(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && login()}
+            inputMode="numeric"
+          />
+        </div>
+
+        {error && (
+          <p className="text-xs text-[#C9A96E] bg-white/5 border border-[#C9A96E]/30 px-3 py-2 rounded-lg">{error}</p>
+        )}
+
+        <button
+          onClick={login}
+          disabled={loading}
+          className="w-full text-[#1A1A1A] font-black py-4 rounded-[30px] text-base mt-2 disabled:opacity-50 active:opacity-80"
+          style={{ background: "#B8935A" }}
+        >
+          {loading ? "확인 중..." : "로그인"}
+        </button>
+
+        <p className="text-xs text-white/30 text-center mt-2">
+          회원번호를 잊으셨나요?
         </p>
       </div>
+    </div>
     </div>
   );
 }

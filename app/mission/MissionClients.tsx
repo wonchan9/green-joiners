@@ -13,22 +13,22 @@ export function CompleteModal({ points, totalPoints, onClose }: CompleteModalPro
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-6">
       <div className="bg-white rounded-3xl overflow-hidden w-full max-w-sm shadow-2xl">
         <div className="bg-[#1A1A1A] py-7 px-6 text-center">
-          <p className="text-[10px] tracking-[0.2em] text-[#C9A96E] font-bold mb-3 uppercase">Mission Complete</p>
-          <h2 className="text-xl font-black text-white">미션 완료!</h2>
+          <h2 className="font-display text-2xl font-bold text-white">미션 완료!</h2>
         </div>
         <div className="p-6 text-center">
           <p className="text-gray-400 text-sm mb-5">포인트가 적립되었습니다</p>
           <div className="bg-[#FBF5E8] rounded-2xl py-5 px-4 mb-5">
             <p className="text-[10px] text-gray-400 mb-2 tracking-widest">획득 포인트</p>
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-4xl font-black text-[#C9A96E] leading-none">+{points}</span>
-              <span className="text-[#C9A96E] font-black text-2xl leading-none mb-0.5">P</span>
+            <div className="font-display flex items-end justify-center gap-1">
+              <span className="text-4xl font-bold text-[#B8935A] leading-none">+{points}</span>
+              <span className="text-[#B8935A] font-bold text-2xl leading-none mb-0.5">P</span>
             </div>
             <p className="text-xs text-gray-400 mt-3">누적 포인트 {totalPoints.toLocaleString()}P</p>
           </div>
           <button
             onClick={onClose}
-            className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90"
+            className="w-full font-bold py-4 rounded-2xl text-base active:opacity-90 text-[#1A1A1A]"
+            style={{ background: "#B8935A" }}
           >
             확인
           </button>
@@ -43,7 +43,6 @@ function GuideBox({ children }: { children: React.ReactNode }) {
     <div className="bg-[#FBF5E8] rounded-2xl overflow-hidden flex">
       <span className="w-1 bg-[#C9A96E] shrink-0" />
       <div className="px-4 py-4 text-sm text-gray-600">
-        <p className="text-[10px] tracking-[0.15em] text-[#C9A96E] font-bold mb-1.5 uppercase">Guide</p>
         {children}
       </div>
     </div>
@@ -99,8 +98,8 @@ export function ReceiptMission({ missionId, points }: { missionId: number; point
         <p>롯데백화점 앱에서 구매 후 모바일 영수증을 발급받으세요.<br />발급이 확인되면 자동으로 미션이 완료됩니다!</p>
       </GuideBox>
       <div className="bg-white rounded-2xl p-6 text-center border border-gray-100">
-        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-          <svg className="w-8 h-8 text-[#E5002B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="w-16 h-16 bg-[#1A1A1A] rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg className="w-8 h-8 text-[#C9A96E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 2 2 2-2 2 2 2-2 3 2V4a2 2 0 0 0-2-2z"/>
             <line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="14" y2="9"/>
           </svg>
@@ -108,8 +107,8 @@ export function ReceiptMission({ missionId, points }: { missionId: number; point
         <p className="text-sm font-semibold text-gray-700 mb-1">모바일 영수증 발급</p>
         <p className="text-xs text-gray-400">발급 확인 시 자동 완료 · 1일 1회</p>
       </div>
-      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
-      <button onClick={() => submit(missionId)} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+      {error && <p className="text-xs text-[#C9A96E] bg-[#FBF5E8] px-3 py-2 rounded-lg text-center">{error}</p>}
+      <button onClick={() => submit(missionId)} disabled={loading} className="w-full font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50 text-[#1A1A1A]" style={{ background: "#B8935A" }}>
         {loading ? "처리 중..." : "[MVP] 영수증 발급 완료 시뮬레이션"}
       </button>
     </div>
@@ -131,7 +130,7 @@ export function QrMission({ missionId, points, label }: { missionId: number; poi
         <p>{label} 이용 후 비치된 QR코드를 촬영하세요.<br />QR 촬영 즉시 미션이 완료됩니다!</p>
       </GuideBox>
       <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-3 border border-gray-100">
-        <div className="w-44 h-44 bg-[#F4F4F4] rounded-2xl flex flex-col items-center justify-center gap-2">
+        <div className="w-44 h-44 bg-[#F6F4EF] rounded-2xl flex flex-col items-center justify-center gap-2">
           <svg className="w-10 h-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             <rect x="14" y="14" width="3" height="3"/><rect x="19" y="14" width="2" height="2"/><rect x="14" y="19" width="2" height="2"/><rect x="18" y="18" width="3" height="3"/>
@@ -140,8 +139,8 @@ export function QrMission({ missionId, points, label }: { missionId: number; poi
         </div>
         <p className="text-xs text-gray-400">1일 1회 참여 가능</p>
       </div>
-      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
-      <button onClick={() => submit(missionId)} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+      {error && <p className="text-xs text-[#C9A96E] bg-[#FBF5E8] px-3 py-2 rounded-lg text-center">{error}</p>}
+      <button onClick={() => submit(missionId)} disabled={loading} className="w-full font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50 text-[#1A1A1A]" style={{ background: "#B8935A" }}>
         {loading ? "처리 중..." : "[MVP] QR 촬영 완료 시뮬레이션"}
       </button>
     </div>
@@ -177,7 +176,7 @@ export function RealsMission({ missionId, points }: { missionId: number; points:
           >
             −
           </button>
-          <span className="text-4xl font-black w-16 text-center tabular-nums">{count}</span>
+          <span className="font-display text-4xl font-bold w-16 text-center tabular-nums">{count}</span>
           <button
             onClick={() => setCount(count + 1)}
             className="w-12 h-12 rounded-full border-2 border-[#C9A96E] text-[#C9A96E] font-bold text-xl active:opacity-70"
@@ -191,13 +190,14 @@ export function RealsMission({ missionId, points }: { missionId: number; points:
         </div>
         <p className="text-xs text-gray-400 text-center mt-2">참여 횟수 제한 없음</p>
       </div>
-      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
+      {error && <p className="text-xs text-[#C9A96E] bg-[#FBF5E8] px-3 py-2 rounded-lg text-center">{error}</p>}
       <button
         onClick={handle}
         disabled={count < 1 || loading}
         className={`w-full font-bold py-4 rounded-2xl text-base active:opacity-90 ${
-          count > 0 && !loading ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
+          count > 0 && !loading ? "text-[#1A1A1A]" : "bg-gray-100 text-gray-300"
         }`}
+        style={count > 0 && !loading ? { background: "#B8935A" } : undefined}
       >
         {loading ? "처리 중..." : "리얼스 참여 확인하기"}
       </button>
@@ -258,13 +258,14 @@ export function DailyMission({ missionId, points }: { missionId: number; points:
           </>
         )}
       </div>
-      {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
+      {error && <p className="text-xs text-[#C9A96E] bg-[#FBF5E8] px-3 py-2 rounded-lg text-center">{error}</p>}
       <button
         onClick={handle}
         disabled={!photo || loading}
         className={`w-full font-bold py-4 rounded-2xl text-base active:opacity-90 ${
-          photo && !loading ? "bg-[#E5002B] text-white" : "bg-gray-100 text-gray-300"
+          photo && !loading ? "text-[#1A1A1A]" : "bg-gray-100 text-gray-300"
         }`}
+        style={photo && !loading ? { background: "#B8935A" } : undefined}
       >
         {loading ? "처리 중..." : "참여하기"}
       </button>

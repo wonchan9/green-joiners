@@ -27,7 +27,7 @@ export default async function RewardDetailPage({
   const canExchange = Number(user.points) >= Number(reward.required_points) && Number(reward.stock) > 0;
 
   return (
-    <div className="pb-20 max-w-md mx-auto bg-[#F4F4F4]">
+    <div className="pb-20 max-w-md mx-auto bg-[#F6F4EF]">
       <div className="bg-white px-4 py-3 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-40">
         <Link href="/mypage/reward" className="text-gray-500 text-xl">←</Link>
         <h1 className="font-bold text-base">리워드 상세</h1>
@@ -37,7 +37,7 @@ export default async function RewardDetailPage({
         <div className="w-24 h-24 bg-[#FBF5E8] rounded-3xl flex items-center justify-center">
           <GiftIcon className="w-12 h-12 text-[#C9A96E]" />
         </div>
-        <h2 className="text-xl font-black">{reward.title}</h2>
+        <h2 className="font-display text-2xl font-bold">{reward.title}</h2>
         <p className="text-gray-500 text-sm">잔여 수량: {reward.stock}개</p>
 
         <div className="w-full bg-white rounded-2xl p-4 shadow-sm mt-2">

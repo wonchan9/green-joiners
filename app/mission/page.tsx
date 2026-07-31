@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { cookies } from "next/headers";
 import Link from "next/link";
-import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ReceiptIcon, BasketIcon, TumblerIcon, TagIcon, CameraIcon } from "@/components/Icons";
 import { getOrCreateUser } from "@/lib/session";
@@ -14,11 +13,11 @@ const missionConfig: Record<string, {
   color: string;
   label: string;
 }> = {
-  receipt: { Icon: ReceiptIcon, bg: "bg-red-50",     color: "text-[#E5002B]",  label: "영수증"   },
-  basket:  { Icon: BasketIcon,  bg: "bg-emerald-50", color: "text-emerald-600", label: "장바구니" },
-  tumbler: { Icon: TumblerIcon, bg: "bg-sky-50",     color: "text-sky-500",    label: "텀블러"   },
-  reals:   { Icon: TagIcon,     bg: "bg-[#FBF5E8]",  color: "text-[#C9A96E]",  label: "리얼스"   },
-  daily:   { Icon: CameraIcon,  bg: "bg-violet-50",  color: "text-violet-500", label: "데일리"   },
+  receipt: { Icon: ReceiptIcon, bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]", label: "영수증"   },
+  basket:  { Icon: BasketIcon,  bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]", label: "장바구니" },
+  tumbler: { Icon: TumblerIcon, bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]", label: "텀블러"   },
+  reals:   { Icon: TagIcon,     bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]", label: "리얼스"   },
+  daily:   { Icon: CameraIcon,  bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]", label: "데일리"   },
 };
 
 export default async function MissionListPage() {
@@ -30,44 +29,46 @@ export default async function MissionListPage() {
   const completedCount = missions.filter((m) => m.completed_today).length;
 
   return (
-    <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
-      <Header points={user.points} />
+    <div className="pb-24 max-w-md mx-auto bg-[#F6F4EF]">
 
-      <div className="px-4 pt-5 pb-4">
-        <p className="text-[10px] tracking-[0.2em] text-[#E5002B] font-bold uppercase mb-1">Mission</p>
-        <h1 className="font-black text-2xl">미션</h1>
-        <p className="text-sm text-gray-400 mt-0.5">참여하고 포인트를 적립하세요</p>
+      {/* 다크 헤더 — HTML 마이페이지 패턴과 동일 */}
+      <div style={{ background: "#1A1A1A", padding: "56px 20px 20px" }}>
+        <div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>미션</div>
+      </div>
 
-        <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-bold text-gray-500">오늘의 달성률</span>
-            <span className="text-xs font-bold text-[#E5002B]">{completedCount}/{missions.length}</span>
-          </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#E5002B] rounded-full"
-              style={{ width: `${missions.length ? (completedCount / missions.length) * 100 : 0}%` }}
-            />
-          </div>
+      {/* 진행 상황 + 미션 목록 */}
+      <div style={{ padding: "20px 20px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: "#1A1A1A" }}>오늘의 미션</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#C9A96E" }}>{completedCount}/{missions.length} 완료</div>
+        </div>
+        <div style={{ height: 6, background: "#E5E3DD", borderRadius: 3, marginTop: 10, overflow: "hidden" }}>
+          <div style={{
+            height: "100%",
+            background: "#C9A96E",
+            borderRadius: 3,
+            width: `${missions.length ? (completedCount / missions.length) * 100 : 0}%`,
+          }} />
         </div>
       </div>
 
-      <div className="px-4 flex flex-col gap-2.5">
+      <div style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         {missions.map((m) => {
           const cfg = missionConfig[m.type] ?? missionConfig.daily;
           const { Icon, bg, color, label } = cfg;
 
           if (m.completed_today) {
             return (
-              <div key={m.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 opacity-40">
-                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
-                  <Icon className="w-6 h-6 text-gray-300" />
+              <div
+                key={m.id}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "#fff", borderRadius: 14, opacity: 0.4 }}
+              >
+                <div className="w-[38px] h-[38px] bg-gray-100 rounded-full flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-gray-300" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[10px] text-gray-400 border border-gray-300 px-1.5 py-0.5 rounded font-medium">{label}</span>
-                  </div>
-                  <p className="font-bold text-sm">{m.title}</p>
+                  <span className="text-[10px] text-gray-400 border border-gray-300 px-1.5 py-0.5 rounded font-medium">{label}</span>
+                  <p className="font-bold text-sm mt-0.5">{m.title}</p>
                 </div>
                 <span className="text-xs text-gray-400 font-semibold shrink-0">완료</span>
               </div>
@@ -78,18 +79,14 @@ export default async function MissionListPage() {
             <Link
               key={m.id}
               href={`/mission/${m.type}`}
-              className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm"
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "#fff", borderRadius: 14, boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
             >
-              <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center shrink-0`}>
-                <Icon className={`w-6 h-6 ${color}`} />
+              <div className={`w-[38px] h-[38px] ${bg} rounded-full flex items-center justify-center shrink-0`}>
+                <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className={`text-[10px] border px-1.5 py-0.5 rounded font-medium ${color} border-current`}>
-                    {label}
-                  </span>
-                </div>
-                <p className="font-bold text-sm">{m.title}</p>
+                <span className={`text-[10px] border px-1.5 py-0.5 rounded font-medium ${color} border-current`}>{label}</span>
+                <p className="font-bold text-sm mt-0.5">{m.title}</p>
                 <p className="text-xs text-gray-400 mt-0.5 truncate">{m.description}</p>
               </div>
               <span className="bg-[#FBF5E8] text-[#C9A96E] font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">

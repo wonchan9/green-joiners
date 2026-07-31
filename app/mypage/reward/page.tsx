@@ -17,13 +17,10 @@ export default async function RewardListPage() {
   const rewards = await sql`SELECT * FROM rewards WHERE visible = 1` as Reward[];
 
   return (
-    <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
+    <div className="pb-24 max-w-md mx-auto bg-[#F6F4EF]">
       <div className="bg-white px-4 py-3 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-40">
         <Link href="/mypage" className="text-gray-400 text-xl leading-none">←</Link>
-        <div className="flex-1">
-          <p className="text-[10px] tracking-[0.15em] text-[#C9A96E] font-bold uppercase leading-none">Reward</p>
-          <h1 className="font-bold text-base leading-snug">리워드샵</h1>
-        </div>
+        <h1 className="flex-1 font-bold text-base leading-snug">리워드샵</h1>
         <span className="text-xs font-bold text-[#C9A96E] border border-[#C9A96E] px-2.5 py-1 rounded-full">
           {Number(user.points).toLocaleString()}P
         </span>

@@ -2,9 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { cookies } from "next/headers";
 import Link from "next/link";
-import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
-import { GiftIcon, ListIcon, ChevronRightIcon } from "@/components/Icons";
 import LogoutButton from "./LogoutButton";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
@@ -18,102 +16,89 @@ export default async function MypagePage() {
 
   const history = await sql`
     SELECT id, type, amount, description, created_at
-    FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC
+    FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC LIMIT 20
   ` as PointHistory[];
 
-  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + Number(h.amount), 0);
-  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + Number(h.amount), 0);
+  const initials = user.name.slice(0, 1);
+  const masked = user.member_key
+    ? user.member_key.slice(0, 4) + "****" + (user.member_key.length > 8 ? user.member_key.slice(-4) : "")
+    : "****";
 
   return (
-    <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
-      <Header points={user.points} />
+    <div className="pb-24 max-w-md mx-auto bg-[#F6F4EF]">
 
-      {/* 포인트 히어로 카드 */}
-      <div className="mx-4 mt-4">
-        <div className="bg-[#1A1A1A] rounded-2xl p-5 shadow-lg">
-          <p className="text-[10px] tracking-[0.2em] text-[#C9A96E] font-bold uppercase mb-4">My Point</p>
-          <p className="text-sm text-white/50 mb-1">안녕하세요, {user.name}님</p>
-          <div className="flex items-end gap-1 mb-5">
-            <span className="text-5xl font-black text-white leading-none">{Number(user.points).toLocaleString()}</span>
-            <span className="text-[#C9A96E] font-black text-3xl leading-none mb-1">P</span>
-          </div>
-          <div className="flex gap-6 border-t border-white/10 pt-4">
-            <div>
-              <p className="text-[10px] text-white/40">누적 적립</p>
-              <p className="text-[#C9A96E] font-bold text-sm">+{earnTotal.toLocaleString()}P</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-white/40">누적 사용</p>
-              <p className="text-white font-bold text-sm">{useTotal.toLocaleString()}P</p>
-            </div>
-          </div>
-        </div>
+      {/* 다크 헤더 — HTML과 동일 */}
+      <div style={{ background: "#1A1A1A", padding: "56px 20px 20px" }}>
+        <div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>마이페이지</div>
       </div>
 
-      {/* 메뉴 그리드 */}
-      <section className="px-4 py-4 grid grid-cols-2 gap-3">
-        <Link href="/mypage/reward" className="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3">
-          <div className="w-10 h-10 bg-[#FBF5E8] rounded-xl flex items-center justify-center">
-            <GiftIcon className="w-5 h-5 text-[#C9A96E]" />
-          </div>
-          <div>
-            <p className="text-[10px] tracking-widest text-[#C9A96E] font-bold uppercase">Reward</p>
-            <p className="font-bold text-sm mt-0.5">리워드샵</p>
-            <p className="text-xs text-gray-400">포인트로 교환</p>
-          </div>
-        </Link>
-        <Link href="/mypage/history" className="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3">
-          <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
-            <ListIcon className="w-5 h-5 text-gray-400" />
-          </div>
-          <div>
-            <p className="text-[10px] tracking-widest text-gray-400 font-bold uppercase">History</p>
-            <p className="font-bold text-sm mt-0.5">포인트 내역</p>
-            <p className="text-xs text-gray-400">적립/사용 내역</p>
-          </div>
-        </Link>
-      </section>
+      {/* 콘텐츠 */}
+      <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
 
-      {/* 최근 내역 */}
-      <section className="px-4 pb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-4 bg-[#E5002B] rounded-full" />
-            <h2 className="font-bold text-sm">최근 포인트 내역</h2>
+        {/* 프로필 카드 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", padding: 16, borderRadius: 16 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: "50%",
+            background: "#1A1A1A", color: "#C9A96E",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontWeight: 800, fontSize: 18, flexShrink: 0,
+          }}>
+            {initials}
           </div>
-          <Link href="/mypage/history" className="flex items-center gap-0.5 text-xs text-[#E5002B]">
-            전체보기 <ChevronRightIcon className="w-3 h-3" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#1A1A1A" }}>{user.name}님</div>
+            <div style={{ fontSize: 12, color: "#999", marginTop: 2 }}>그린 멤버 · 회원번호 {masked}</div>
+          </div>
+        </div>
+
+        {/* 포인트 카드 */}
+        <div style={{
+          background: "linear-gradient(155deg,#232323,#141414)",
+          border: "1px solid rgba(201,169,110,0.4)",
+          borderRadius: 16, padding: 20,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <div>
+            <div style={{ color: "#C9A96E", fontSize: 11, fontWeight: 700, letterSpacing: 1.5 }}>보유 포인트</div>
+            <div className="font-display" style={{ color: "#fff", fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+              {Number(user.points).toLocaleString()}
+              <span style={{ color: "#C9A96E", fontSize: 14 }}> P</span>
+            </div>
+          </div>
+          <Link
+            href="/mypage/reward"
+            style={{ background: "#C9A96E", color: "#1A1A1A", fontSize: 12, fontWeight: 800, padding: "10px 16px", borderRadius: 24, flexShrink: 0, textDecoration: "none" }}
+          >
+            리워드 상점
           </Link>
         </div>
+
+        {/* 포인트 내역 */}
+        <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginTop: 6 }}>포인트 내역</div>
+
         {history.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center text-sm text-gray-400 shadow-sm">
+          <div style={{ background: "#fff", borderRadius: 12, padding: "24px 16px", textAlign: "center", fontSize: 13, color: "#999" }}>
             아직 포인트 내역이 없습니다
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-            {history.slice(0, 5).map((h, i) => (
-              <div
-                key={h.id}
-                className={`flex items-center gap-3 px-4 py-3 ${i !== 0 ? "border-t border-gray-50" : ""}`}
-              >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${h.type === "earn" ? "bg-[#C9A96E]" : "bg-gray-200"}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{h.description}</p>
-                  <p className="text-xs text-gray-400">{String(h.created_at).slice(0, 16)}</p>
-                </div>
-                <span className={`font-bold text-sm shrink-0 ${h.type === "earn" ? "text-[#C9A96E]" : "text-gray-400"}`}>
-                  {h.type === "earn" ? "+" : "−"}{Number(h.amount)}P
-                </span>
+          history.map((h) => (
+            <div
+              key={h.id}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", padding: "14px 16px", borderRadius: 12 }}
+            >
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>{h.description}</div>
+                <div style={{ fontSize: 11, color: "#999", marginTop: 3 }}>{String(h.created_at).slice(0, 10)}</div>
               </div>
-            ))}
-          </div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: h.type === "earn" ? "#C9A96E" : "#999" }}>
+                {h.type === "earn" ? "+" : "−"}{Number(h.amount)}P
+              </div>
+            </div>
+          ))
         )}
-      </section>
 
-      {/* 로그아웃 */}
-      <section className="px-4 pb-6">
         <LogoutButton />
-      </section>
+      </div>
 
       <BottomNav />
     </div>

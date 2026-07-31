@@ -38,11 +38,11 @@ export default async function MissionDetailPage({
   const completedToday = cnt >= Number(mission.daily_limit);
 
   return (
-    <div className="pb-20 max-w-md mx-auto bg-[#F4F4F4]">
-      <div className="bg-white px-4 py-3 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-40">
-        <Link href="/mission" className="text-gray-400 text-xl leading-none">←</Link>
-        <h1 className="font-bold text-base flex-1">{typeLabel[type]}</h1>
-        <span className="text-xs font-bold text-[#C9A96E] border border-[#C9A96E] px-2.5 py-1 rounded-full">
+    <div className="pb-20 max-w-md mx-auto bg-[#F6F4EF]">
+      <div className="bg-[#1A1A1A] px-4 py-3 flex items-center gap-3 sticky top-0 z-40">
+        <Link href="/mission" className="text-white/60 text-xl leading-none">←</Link>
+        <h1 className="font-bold text-base flex-1 text-white">{typeLabel[type]}</h1>
+        <span className="text-xs font-bold text-[#C9A96E] border border-[#C9A96E]/60 px-2.5 py-1 rounded-full">
           +{mission.points}P
         </span>
       </div>

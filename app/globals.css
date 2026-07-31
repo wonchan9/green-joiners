@@ -1,20 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@600;700;800;900&display=swap');
 @import "tailwindcss";
 
 html {
-  overflow-y: scroll; /* 스크롤바 공간 항상 예약 → 페이지 이동 시 레이아웃 쉬프트 방지 */
+  overflow-y: scroll;
 }
 
 :root {
-  --lotte-red: #E5002B;
-  --lotte-red-light: #FFF5F5;
-  --lotte-gold: #C9A96E;
-  --lotte-gold-light: #FBF5E8;
-  --lotte-black: #1A1A1A;
-  --lotte-gray: #F4F4F4;
+  --ink: #141414;
+  --gold: #B8935A;
+  --gold-light: #C9A96E;
+  --paper: #F6F4EF;
+  --line: rgba(20, 20, 20, 0.08);
+  --progress-bg: #E5E3DD;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  color: var(--lotte-black);
-  background: var(--lotte-gray);
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.font-display {
+  font-family: 'Noto Serif KR', serif;
+  letter-spacing: -0.01em;
 }

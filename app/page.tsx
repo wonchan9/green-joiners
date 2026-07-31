@@ -2,10 +2,8 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { cookies } from "next/headers";
-import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ChevronRightIcon, ReceiptIcon, BasketIcon, TumblerIcon, TagIcon, CameraIcon } from "@/components/Icons";
-import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
 import { getMissionsWithStatus } from "@/lib/missions";
 
@@ -14,14 +12,12 @@ const missionConfig: Record<string, {
   bg: string;
   color: string;
 }> = {
-  receipt: { Icon: ReceiptIcon, bg: "bg-red-50",     color: "text-[#E5002B]"  },
-  basket:  { Icon: BasketIcon,  bg: "bg-emerald-50", color: "text-emerald-600" },
-  tumbler: { Icon: TumblerIcon, bg: "bg-sky-50",     color: "text-sky-500"    },
-  reals:   { Icon: TagIcon,     bg: "bg-[#FBF5E8]",  color: "text-[#C9A96E]"  },
-  daily:   { Icon: CameraIcon,  bg: "bg-violet-50",  color: "text-violet-500" },
+  receipt: { Icon: ReceiptIcon, bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]" },
+  basket:  { Icon: BasketIcon,  bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]" },
+  tumbler: { Icon: TumblerIcon, bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]" },
+  reals:   { Icon: TagIcon,     bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]" },
+  daily:   { Icon: CameraIcon,  bg: "bg-[#1A1A1A]", color: "text-[#C9A96E]" },
 };
-
-interface PointHistory { type: string; amount: number; }
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -30,77 +26,102 @@ export default async function Home() {
   const user = await getOrCreateUser(memberKey);
   const missions = await getMissionsWithStatus(user.id);
 
-  const history = await sql`
-    SELECT type, amount FROM point_history WHERE user_id = ${user.id} ORDER BY created_at DESC
-  ` as PointHistory[];
-
-  const earnTotal = history.filter((h) => h.type === "earn").reduce((s, h) => s + Number(h.amount), 0);
-  const useTotal  = history.filter((h) => h.type === "use").reduce((s, h) => s + Number(h.amount), 0);
-
   const incompleteMissions = missions.filter((m) => !m.completed_today).slice(0, 3);
   const completedCount = missions.filter((m) => m.completed_today).length;
 
   return (
-    <div className="pb-24 max-w-md mx-auto bg-[#F4F4F4]">
-      <Header points={user.points} />
+    <div className="pb-24 max-w-md mx-auto bg-[#F6F4EF]">
 
-      {/* 포인트 카드 */}
-      <div className="mx-4 mt-4">
-        <div className="bg-[#1A1A1A] rounded-2xl p-5 shadow-lg">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-[10px] tracking-[0.2em] text-[#C9A96E] font-bold uppercase">Green Joiners</p>
-              <p className="text-[10px] text-white/30 mt-0.5">Eco Reward Card</p>
-            </div>
-            <div className="w-8 h-8 rounded-full border border-[#C9A96E]/50 flex items-center justify-center">
-              <span className="text-[#C9A96E] text-xs font-black">G</span>
-            </div>
+      {/* 다크 히어로 헤더 */}
+      <div className="bg-[#1A1A1A] px-5 pt-14 pb-10">
+        <div className="flex justify-between items-start">
+          <div>
+            <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 500 }}>안녕하세요</div>
+            <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, marginTop: 2 }}>{user.name}님</div>
           </div>
-          <div className="mb-4">
-            <p className="text-[10px] text-white/40 mb-0.5">보유 포인트</p>
-            <div className="flex items-end gap-1">
-              <span className="text-4xl font-black text-white leading-none">{Number(user.points).toLocaleString()}</span>
-              <span className="text-[#C9A96E] font-black text-2xl leading-none mb-0.5">P</span>
-            </div>
-            <p className="text-[10px] text-white/30 mt-1">{user.name}님의 그린 포인트</p>
-          </div>
-          <div className="flex gap-6 border-t border-white/10 pt-4">
-            <div>
-              <p className="text-[10px] text-white/40">누적 적립</p>
-              <p className="text-[#C9A96E] font-bold text-sm">+{earnTotal.toLocaleString()}P</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-white/40">누적 사용</p>
-              <p className="text-white font-bold text-sm">{useTotal.toLocaleString()}P</p>
-            </div>
+          <div style={{
+            border: "1px solid #C9A96E",
+            color: "#C9A96E",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.5px",
+            padding: "5px 10px",
+            borderRadius: 20,
+          }}>
+            그린 멤버
           </div>
         </div>
       </div>
 
-      {/* 오늘의 미션 */}
-      <section className="px-4 pt-6 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-4 bg-[#E5002B] rounded-full" />
-            <h2 className="font-bold text-base">오늘의 미션</h2>
+      {/* GREEN POINT 카드 — 헤더와 겹침 */}
+      <div className="px-5" style={{ marginTop: -24 }}>
+        <div style={{
+          background: "linear-gradient(155deg, #232323, #141414)",
+          border: "1px solid rgba(201,169,110,0.4)",
+          borderRadius: 20,
+          padding: "26px 22px",
+          position: "relative",
+          overflow: "hidden",
+          boxShadow: "0 16px 32px rgba(0,0,0,0.25)",
+        }}>
+          <div style={{ color: "#C9A96E", fontSize: 11, fontWeight: 700, letterSpacing: 1.5 }}>
+            보유 포인트
           </div>
-          <Link href="/mission" className="flex items-center gap-0.5 text-xs text-[#E5002B] font-semibold">
-            전체보기 <ChevronRightIcon className="w-3 h-3" />
+          <div className="font-display" style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 12 }}>
+            <span style={{ color: "#fff", fontSize: 44, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1 }}>
+              {Number(user.points).toLocaleString()}
+            </span>
+            <span style={{ color: "#C9A96E", fontSize: 18, fontWeight: 700 }}>P</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+            <span style={{ color: "rgba(201,169,110,0.6)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5 }}>
+              그린 조이너스
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 이번 달 캠페인 배너 */}
+      <div className="px-5 mt-5">
+        <div style={{
+          background: "#1A1A1A",
+          borderRadius: 16,
+          padding: 20,
+          borderLeft: "3px solid #B8935A",
+        }}>
+          <div style={{ color: "#C9A96E", fontSize: 11, fontWeight: 700, letterSpacing: 1.5 }}>이번 달 캠페인</div>
+          <div className="font-display" style={{ color: "#fff", fontSize: 19, fontWeight: 700, marginTop: 8 }}>친환경 미션 위크</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, marginTop: 6 }}>미션 4개 모두 완료 시 보너스 200P</div>
+        </div>
+      </div>
+
+      {/* 오늘의 미션 */}
+      <div className="px-5 pt-6 pb-2">
+        <div className="flex items-center justify-between mb-2.5">
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: "#1A1A1A" }}>오늘의 미션</h2>
+          <Link href="/mission" style={{ fontSize: 13, fontWeight: 700, color: "#C9A96E" }}>
+            {completedCount}/{missions.length} 완료
           </Link>
         </div>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#E5002B] rounded-full" style={{ width: `${missions.length ? (completedCount / missions.length) * 100 : 0}%` }} />
-          </div>
-          <span className="text-xs text-gray-400 shrink-0 tabular-nums">{completedCount}/{missions.length} 완료</span>
+        <div style={{ height: 6, background: "#E5E3DD", borderRadius: 3, overflow: "hidden", marginBottom: 16 }}>
+          <div style={{
+            height: "100%",
+            background: "#C9A96E",
+            borderRadius: 3,
+            width: `${missions.length ? (completedCount / missions.length) * 100 : 0}%`,
+          }} />
         </div>
         <div className="flex flex-col gap-2.5">
           {incompleteMissions.map((m) => {
             const { Icon, bg, color } = missionConfig[m.type] ?? missionConfig.daily;
             return (
-              <Link key={m.id} href={`/mission/${m.type}`} className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-                <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center shrink-0`}>
-                  <Icon className={`w-6 h-6 ${color}`} />
+              <Link
+                key={m.id}
+                href={`/mission/${m.type}`}
+                style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
+              >
+                <div className={`w-[38px] h-[38px] ${bg} rounded-full flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-5 h-5 ${color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm">{m.title}</p>
@@ -113,33 +134,18 @@ export default async function Home() {
             );
           })}
         </div>
-      </section>
-
-      {/* 캠페인 소개 */}
-      <section className="mx-4 mt-4">
-        <div className="bg-[#FBF5E8] rounded-2xl overflow-hidden flex">
-          <span className="w-1 bg-[#C9A96E] shrink-0" />
-          <div className="px-4 py-4">
-            <p className="text-[10px] tracking-[0.15em] text-[#C9A96E] font-bold mb-1.5 uppercase">Campaign</p>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              그린 조이너스는 롯데백화점과 함께하는 친환경 실천 리워드 캠페인입니다.
-              미션에 참여하고 포인트를 적립해 다양한 리워드로 교환하세요.
-            </p>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* 리워드샵 */}
-      <section className="mx-4 mt-3 mb-4">
+      <div className="px-5 mt-3 mb-4">
         <Link href="/mypage/reward" className="bg-[#1A1A1A] rounded-2xl px-5 py-4 flex items-center justify-between">
           <div>
-            <p className="text-[10px] tracking-[0.15em] text-[#C9A96E] font-bold mb-0.5 uppercase">Reward Shop</p>
             <p className="text-white font-bold text-sm">리워드 교환하기</p>
             <p className="text-white/40 text-xs mt-0.5">보유 {Number(user.points).toLocaleString()}P</p>
           </div>
           <ChevronRightIcon className="w-5 h-5 text-[#C9A96E]" />
         </Link>
-      </section>
+      </div>
 
       <footer className="px-4 py-6 text-xs text-gray-400 text-center border-t border-gray-100">
         <p>코즈웍스 | 서울특별시 성동구 아차산로 | 사업자 123-45-67890</p>
