@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
+import Modal from "@/components/Modal";
 
 interface Member { id: number; member_key: string; name: string; points: number; joined_at: string; }
 
@@ -84,8 +85,7 @@ export default function AdminMemberPage() {
       </main>
 
       {detail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-[#F4F4F4] rounded-full flex items-center justify-center font-bold text-gray-500">
                 {detail.name[0]}
@@ -104,8 +104,7 @@ export default function AdminMemberPage() {
               <span className="font-medium text-gray-700">{detail.joined_at?.slice(0, 10)}</span>
             </div>
             <button onClick={() => setDetail(null)} className="w-full py-3 rounded-xl bg-gray-100 text-sm font-semibold">닫기</button>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

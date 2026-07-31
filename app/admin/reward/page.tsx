@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
+import Modal from "@/components/Modal";
 
 interface RewardRequest { id: number; name?: string; user_id: number; reward_id: number; reward_title?: string; used_points: number; status: string; created_at: string; }
 interface Reward { id: number; title: string; required_points: number; stock: number; }
@@ -137,8 +138,7 @@ export default function AdminRewardPage() {
       </main>
 
       {showAdd && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <h2 className="font-bold text-lg mb-5">리워드 추가</h2>
             <div className="mb-3">
               <label className="text-xs font-semibold text-gray-500 mb-1.5 block">리워드 이름</label>
@@ -163,8 +163,7 @@ export default function AdminRewardPage() {
               <button onClick={() => setShowAdd(false)} className="flex-1 py-3 rounded-xl bg-gray-100 text-sm font-semibold">취소</button>
               <button onClick={addReward} className="flex-1 py-3 rounded-xl bg-[#E5002B] text-white text-sm font-bold">등록하기</button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

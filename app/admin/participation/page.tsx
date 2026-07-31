@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
+import Modal from "@/components/Modal";
 
 interface Participation {
   id: number; member_key: string; name: string;
@@ -90,8 +91,7 @@ export default function AdminParticipationPage() {
       </main>
 
       {detail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <h2 className="font-bold text-lg mb-5">참여 상세</h2>
             <div className="flex flex-col gap-3 text-sm mb-6">
               {[
@@ -122,8 +122,7 @@ export default function AdminParticipationPage() {
                 </button>
               )}
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

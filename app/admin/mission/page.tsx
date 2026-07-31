@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminNav from "../AdminNav";
+import Modal from "@/components/Modal";
 
 interface Mission { id: number; type: string; title: string; description: string; points: number; daily_limit: number; active: number; }
 
@@ -141,8 +142,7 @@ export default function AdminMissionPage() {
 
       {/* 포인트 수정 모달 */}
       {editId !== null && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <h2 className="font-bold text-lg mb-1">포인트 수정</h2>
             <p className="text-sm text-gray-400 mb-5">{missions.find(m => m.id === editId)?.title}</p>
             <div className="mb-4">
@@ -158,14 +158,12 @@ export default function AdminMissionPage() {
               <button onClick={() => setEditId(null)} className="flex-1 py-3 rounded-xl bg-gray-100 text-sm font-semibold">취소</button>
               <button onClick={savePoints} className="flex-1 py-3 rounded-xl bg-[#E5002B] text-white text-sm font-bold">저장</button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* 데일리 미션 추가 모달 */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <h2 className="font-bold text-lg mb-5">데일리 미션 추가</h2>
             <div className="flex flex-col gap-3 mb-5">
               <div>
@@ -218,8 +216,7 @@ export default function AdminMissionPage() {
                 추가하기
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

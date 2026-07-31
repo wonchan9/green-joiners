@@ -63,18 +63,16 @@ async function participate(missionId: number, quantity = 1) {
   return res.json() as Promise<{ ok: boolean; earned_points: number; total_points: number }>;
 }
 
-// 모바일 영수증 미션
-export function ReceiptMission({ missionId, points }: { missionId: number; points: number }) {
+function useMissionSubmit() {
   const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
-  const handle = async () => {
+  const submit = async (missionId: number, quantity = 1) => {
     setLoading(true);
     setError("");
     try {
-      const data = await participate(missionId);
+      const data = await participate(missionId, quantity);
       setResult(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "오류가 발생했습니다");
@@ -82,6 +80,14 @@ export function ReceiptMission({ missionId, points }: { missionId: number; point
       setLoading(false);
     }
   };
+
+  return { result, loading, error, submit };
+}
+
+// 모바일 영수증 미션
+export function ReceiptMission({ missionId, points }: { missionId: number; points: number }) {
+  const { result, loading, error, submit } = useMissionSubmit();
+  const router = useRouter();
 
   if (result) return (
     <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
@@ -103,7 +109,7 @@ export function ReceiptMission({ missionId, points }: { missionId: number; point
         <p className="text-xs text-gray-400">발급 확인 시 자동 완료 · 1일 1회</p>
       </div>
       {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
-      <button onClick={handle} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+      <button onClick={() => submit(missionId)} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
         {loading ? "처리 중..." : "[MVP] 영수증 발급 완료 시뮬레이션"}
       </button>
     </div>
@@ -112,23 +118,8 @@ export function ReceiptMission({ missionId, points }: { missionId: number; point
 
 // QR 미션
 export function QrMission({ missionId, points, label }: { missionId: number; points: number; label: string }) {
-  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { result, loading, error, submit } = useMissionSubmit();
   const router = useRouter();
-
-  const handle = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await participate(missionId);
-      setResult(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (result) return (
     <CompleteModal points={result.earned_points} totalPoints={result.total_points} onClose={() => router.push("/mission")} />
@@ -150,7 +141,7 @@ export function QrMission({ missionId, points, label }: { missionId: number; poi
         <p className="text-xs text-gray-400">1일 1회 참여 가능</p>
       </div>
       {error && <p className="text-xs text-[#E5002B] bg-red-50 px-3 py-2 rounded-lg text-center">{error}</p>}
-      <button onClick={handle} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
+      <button onClick={() => submit(missionId)} disabled={loading} className="w-full bg-[#E5002B] text-white font-bold py-4 rounded-2xl text-base active:opacity-90 disabled:opacity-50">
         {loading ? "처리 중..." : "[MVP] QR 촬영 완료 시뮬레이션"}
       </button>
     </div>
@@ -159,24 +150,13 @@ export function QrMission({ missionId, points, label }: { missionId: number; poi
 
 // 리얼스 미션
 export function RealsMission({ missionId, points }: { missionId: number; points: number }) {
-  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
   const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { result, loading, error, submit } = useMissionSubmit();
   const router = useRouter();
 
-  const handle = async () => {
+  const handle = () => {
     if (count < 1) return;
-    setLoading(true);
-    setError("");
-    try {
-      const data = await participate(missionId, count);
-      setResult(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
+    submit(missionId, count);
   };
 
   if (result) return (
@@ -228,23 +208,12 @@ export function RealsMission({ missionId, points }: { missionId: number; points:
 // 데일리 미션
 export function DailyMission({ missionId, points }: { missionId: number; points: number }) {
   const [photo, setPhoto] = useState<string | null>(null);
-  const [result, setResult] = useState<{ earned_points: number; total_points: number } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { result, loading, error, submit } = useMissionSubmit();
   const router = useRouter();
 
-  const handle = async () => {
+  const handle = () => {
     if (!photo) return;
-    setLoading(true);
-    setError("");
-    try {
-      const data = await participate(missionId);
-      setResult(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
+    submit(missionId);
   };
 
   if (result) return (

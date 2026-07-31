@@ -5,8 +5,8 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ReceiptIcon, BasketIcon, TumblerIcon, TagIcon, CameraIcon } from "@/components/Icons";
-import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
+import { getMissionsWithStatus } from "@/lib/missions";
 
 const missionConfig: Record<string, {
   Icon: React.ComponentType<{ className?: string }>;
@@ -21,28 +21,11 @@ const missionConfig: Record<string, {
   daily:   { Icon: CameraIcon,  bg: "bg-violet-50",  color: "text-violet-500", label: "데일리"   },
 };
 
-interface Mission {
-  id: number; type: string; title: string; description: string;
-  points: number; daily_limit: number; completed_today?: boolean;
-}
-
 export default async function MissionListPage() {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value ?? "guest";
   const user = await getOrCreateUser(memberKey);
-  const today = new Date().toISOString().slice(0, 10);
-
-  const rawMissions = await sql`SELECT * FROM missions WHERE active = 1` as Mission[];
-  const missions: Mission[] = await Promise.all(
-    rawMissions.map(async (m) => {
-      const rows = await sql`
-        SELECT COUNT(*) as cnt FROM participations
-        WHERE user_id = ${user.id} AND mission_id = ${m.id} AND created_at::date = ${today}::date
-      `;
-      const cnt = Number(rows[0].cnt);
-      return { ...m, completed_today: cnt >= Number(m.daily_limit) };
-    })
-  );
+  const missions = await getMissionsWithStatus(user.id);
 
   const completedCount = missions.filter((m) => m.completed_today).length;
 

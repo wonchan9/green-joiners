@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import AdminNav from "../AdminNav";
+import Modal from "@/components/Modal";
 import Image from "next/image";
 
 interface Banner { id: number; image_url: string; link_url: string; visible: number; }
@@ -154,8 +155,7 @@ export default function AdminBannerPage() {
       </main>
 
       {showAdd && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <Modal>
             <h2 className="font-bold text-lg mb-5">배너 이미지 등록</h2>
 
             {/* 이미지 선택 영역 */}
@@ -214,8 +214,7 @@ export default function AdminBannerPage() {
                 {uploading ? "업로드 중..." : "등록하기"}
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

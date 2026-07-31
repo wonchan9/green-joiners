@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/session";
+import { getMissionsWithStatus } from "@/lib/missions";
 import { cookies } from "next/headers";
 
 // GET /api/missions → 미션 목록 + 오늘 참여 여부
@@ -10,26 +11,15 @@ export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
   const memberKey = cookieStore.get("member_key")?.value;
 
-  const missions = showAll
-    ? await sql`SELECT * FROM missions ORDER BY id`
-    : await sql`SELECT * FROM missions WHERE active = 1 ORDER BY id`;
-
-  if (!memberKey) return NextResponse.json(missions);
+  if (!memberKey) {
+    const missions = showAll
+      ? await sql`SELECT * FROM missions ORDER BY id`
+      : await sql`SELECT * FROM missions WHERE active = 1 ORDER BY id`;
+    return NextResponse.json(missions);
+  }
 
   const user = await getOrCreateUser(memberKey);
-  const today = new Date().toISOString().slice(0, 10);
-
-  const missionsWithStatus = await Promise.all(
-    missions.map(async (m) => {
-      const rows = await sql`
-        SELECT COUNT(*) as cnt FROM participations
-        WHERE user_id = ${user.id} AND mission_id = ${m.id} AND created_at::date = ${today}::date
-      `;
-      const todayCount = Number(rows[0].cnt);
-      return { ...m, completed_today: todayCount >= Number(m.daily_limit) };
-    })
-  );
-
+  const missionsWithStatus = await getMissionsWithStatus(user.id, showAll);
   return NextResponse.json(missionsWithStatus);
 }
 

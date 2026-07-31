@@ -17,18 +17,6 @@ export async function POST(req: NextRequest) {
   return res;
 }
 
-// GET /api/auth?member_key=xxx → 레거시 (미사용)
-export async function GET(req: NextRequest) {
-  const memberKey = req.nextUrl.searchParams.get("member_key");
-  if (!memberKey) {
-    return NextResponse.json({ error: "member_key 없음" }, { status: 400 });
-  }
-  const user = await getOrCreateUser(memberKey);
-  const res = NextResponse.json({ ok: true, user });
-  res.cookies.set("member_key", memberKey, { path: "/", httpOnly: false });
-  return res;
-}
-
 // DELETE /api/auth → 로그아웃
 export async function DELETE() {
   const res = NextResponse.json({ ok: true });
